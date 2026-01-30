@@ -1,5 +1,5 @@
 {
-  "name": "1.core-modules",
+  "name": "2.local-modules",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
@@ -9,8 +9,5 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "init": "^0.1.2"
-  }
+  "description": ""
 }
