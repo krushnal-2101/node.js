@@ -1,0 +1,24 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    background-color: black;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;    
+    margin-top: 15%;
+}   
+
+a{
+    text-decoration: none;
+    padding: 40px;
+    color: rgb(98, 128, 155);
+}
+
+form{
+    background-color: rgb(2, 1, 0); 
+}

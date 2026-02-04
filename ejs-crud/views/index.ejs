@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EJS CRUD</title>
+
+    <link rel="stylesheet" href="style.css">
+  
+  </head>
+  <body>
+
+    <h1>STUDENT-LIST <br></h1>
+
+    <a href="/add">ADD STUDENT DATA</a>
+
+<ul>
+
+      <%studentList.forEach((s)=>{%>
+        <li>
+          <%=s.name%>
+          <a href="/edit/<%=s.id%>">EDIT</a>
+          <a href="/delete/<%=s.id%>">DELETE</a>
+        </li>
+   <%})%>
+
+</ul>
+
+  </body>
+</html>
