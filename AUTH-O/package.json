@@ -1,9 +1,8 @@
 {
-  "name": "auth-o",
+  "name": "11_o-auth",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
-  "types": "module",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
@@ -12,13 +11,11 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "description": "",
   "dependencies": {
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
-    "mongoose": "^9.3.0"
-  },
-  "devDependencies": {
+    "mongoose": "^9.3.0",
     "nodemon": "^3.1.14"
   }
 }
