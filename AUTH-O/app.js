@@ -1,6 +1,8 @@
 import express from "express";
 import HttpError from "./middleware/HttpError.js";
 import connectDB from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
+import passport from "./config/passport.js";
 
 import dotenv from "dotenv";
 
@@ -10,8 +12,14 @@ const app = express();
 
 app.use(express.json());
 
+app.use("/auth", authRoutes);
+
+app.use(passport.initialize());
+
+app.set("view engine", "ejs");
+
 app.get("/", (req, res) => {
-  res.status(200).json({ message: "hello from server" });
+  res.render("home");
 });
 
 app.use((req, res, next) => {
@@ -24,7 +32,7 @@ app.use((error, req, res, next) => {
   }
 
   res
-    .status(error.statusCode || 5000)
+    .status(error.statusCode || 500)
     .json({ message: error.message || "internal server error " });
 });
 
