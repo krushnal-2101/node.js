@@ -2,7 +2,9 @@ import express from "express";
 import HttpError from "./middleware/HttpError.js";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
 import passport from "./config/passport.js";
+import session from "express-session";
 
 import dotenv from "dotenv";
 
@@ -12,14 +14,28 @@ const app = express();
 
 app.use(express.json());
 
-app.use("/auth", authRoutes);
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false,
+      maxAge: 24 * 60 * 60 * 1000,
+    },
+  }),
+);
 
 app.use(passport.initialize());
+app.use(passport.session());
+
+app.use("/auth", authRoutes);
+app.use("/profile", profileRoutes);
 
 app.set("view engine", "ejs");
 
 app.get("/", (req, res) => {
-  res.render("home");
+  res.render("home", { user: req.user });
 });
 
 app.use((req, res, next) => {

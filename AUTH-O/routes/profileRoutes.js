@@ -1,18 +1,10 @@
-import httperror from "../middleware/HttpError.js"
-import express from "express"
+import express from "express";
+import checkAuth from "../middleware/checkAuth.js";
 
-const router = express.Router()
+const router = express.Router();
 
-const checkAuth = async (req, res, next) => {
-    if (!req.user){
-        return next(new httperror("User not authenticated", 401));
-    }
-    next();
-}
-
-router.get("/profile", checkAuth, (req, res) => {
-    res.render("profile", { user: req.user });
+router.get("/", checkAuth, (req, res) => {
+  res.render("profile", { user: req.user });
 });
 
 export default router;
-

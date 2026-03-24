@@ -1,5 +1,6 @@
 import express from "express";
 import passport from "passport";
+import HttpError from "../middleware/HttpError.js";
 
 const router = express.Router();
 
@@ -18,11 +19,20 @@ router.get(
   "/google/redirect",
   passport.authenticate("google", {
     failureRedirect: "/",
-    session: false,
   }),
   (req, res) => {
-    res.send("this is callback url");
+    res.redirect("/profile");
   },
 );
+
+router.get("/logout", (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      next(new HttpError("failed to logOut"));
+    }
+  });
+
+  res.redirect("/");
+});
 
 export default router;
