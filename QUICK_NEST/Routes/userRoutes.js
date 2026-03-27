@@ -1,16 +1,13 @@
 import express from "express";
-import UserController from "../controller/UserController.js";
 
+import userController from "../controller/UserController.js"
+import validate from "../middleware/validate.js";
+import registerSchema from "../validation/registerSchema.js";
 
 const router = express.Router();
 
-// ADD USER
+router.post("/add", validate(registerSchema), userController.add);
 
-router.post("/add", UserController.add)
+router.post("/login", userController.login);
 
-
-// LOGIN USER
-
-router.post("/login", UserController.login)
-
-export default router
+export default router;

@@ -1,16 +1,16 @@
 import HttpError from "../middleware/HttpError.js";
 import User from "../model/User.js";
 
-const addUser = async (req, res, next) => {
+const add = async (req, res, next) => {
   try {
-    const { name, email, password, phone, roll } = req.body;
+    const { name, email, password, role, phone } = req.body;
 
     const newUser = {
       name,
       email,
       password,
+      role,
       phone,
-      roll,
     };
 
     const user = new User(newUser);
@@ -19,26 +19,24 @@ const addUser = async (req, res, next) => {
 
     res.status(201).json({ success: true, user });
   } catch (error) {
-    next(error);
+    next(new HttpError(error.message, 500));
   }
 };
 
-const loginUser = async (req, res, next) => {
+const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findByCredentials(email, password);
 
     if (!user) {
-      return next(new HttpError("Unable to login ", 400));
+      return next(new HttpError("unable to login"));
     }
 
-    res
-      .status(200)
-      .json({ success: true, message: "Login Successfully", user });
+    res.status(200).json({ success: true, user });
   } catch (error) {
-    next(new HttpError(error.message, 404));
+    next(new HttpError(error.message, 500));
   }
 };
 
-export default { addUser, loginUser };
+export default { add, login };
