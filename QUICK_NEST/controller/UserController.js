@@ -3,13 +3,13 @@ import User from "../model/User.js";
 
 const add = async (req, res, next) => {
   try {
-    const { name, email, password, role, phone } = req.body;
+    const { name, email, password, roll, phone } = req.body;
 
     const newUser = {
       name,
       email,
       password,
-      role,
+      roll,
       phone,
     };
 
@@ -39,4 +39,19 @@ const login = async (req, res, next) => {
   }
 };
 
-export default { add, login };
+
+const authLogin = async (req, res, next) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return next(new HttpError("Unable to login"));
+    }
+
+    res.status(201).json({ success: true, user });
+  } catch (error) {
+    next(new HttpError(error.message, 404));
+  }
+};
+
+export default { add, login, authLogin  };

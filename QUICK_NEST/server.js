@@ -1,11 +1,12 @@
 import dotenv from "dotenv";
-dotenv.config({ path: "./.env" });
-
 import express from "express";
 
 import HttpError from "./middleware/HttpError.js";
 import connectDB from "./config/db.js";
 import userRouter from "./Routes/userRoutes.js";
+
+dotenv.config({ path: "./.env" });
+
 
 import dns from "dns"
 
