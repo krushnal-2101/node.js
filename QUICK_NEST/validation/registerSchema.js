@@ -35,8 +35,13 @@ const registerSchema = Joi.object({
             "number.min": "Phone number must be at least 10 digits",
             "number.max": "Phone number must be at most 10 digits"
         }),
-    role: Joi.string()
-        .optional(),
+     role: joi.string()
+    .valid("customer","provider","admin","super_admin")
+    .optional()
+    .messages({
+        "string.empty":"role is required from any of these customer.",
+        "any.required":"email is required",
+    }),
 });
 
 export default registerSchema;
