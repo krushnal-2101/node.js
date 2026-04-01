@@ -23,35 +23,104 @@ const add = async (req, res, next) => {
   }
 };
 
-const login = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findByCredentials(email, password);
-
-    if (!user) {
-      return next(new HttpError("unable to login"));
+const login = async(req,res,next)=>{
+    try {
+        const {email,password}= req.body;
+        const user = await User.findByCredentials(email,password);
+        const token = await user.generateAuthToken();
+        if(!user){
+            throw new Error("unable to login");
+        }
+        res.status(200).json({success:true,message:"successfully login!!",user,token});
+    } catch (error) {
+        next(new HttpError(error.message, 500));
     }
+}
 
-    res.status(200).json({ success: true, user });
-  } catch (error) {
-    next(new HttpError(error.message, 500));
-  }
-};
-
-
-const authLogin = async (req, res, next) => {
-  try {
-    const user = req.user;
-
-    if (!user) {
-      return next(new HttpError("Unable to login"));
+const authLogin = async(req,res,next)=>{
+    try {
+        const user = req.user;
+        if(!user){
+            return next(new HttpError("user not found",404));
+        }
+        res.status(200).json({success:true,user});
+    } catch (error) {
+        next(new HttpError(error.message, 500));
     }
+}
 
-    res.status(201).json({ success: true, user });
-  } catch (error) {
-    next(new HttpError(error.message, 404));
-  }
-};
+const logOut =async(req,res,next)=>{
+    try {
+        const user = req.user;
 
-export default { add, login, authLogin  };
+        user.tokens = user.tokens.filter((t)=>{
+            return t.token != req.token;
+        });
+        await user.save();
+        res.status(200).json({success:true,message:"user logout successfully!!"});
+    } catch (error) {
+        next(new HttpError(error.message, 500));
+    }
+}
+
+const logOutAll = async(req,res,next)=>{
+    try {
+        req.user.tokens = [];
+        await req.user.save();
+        res.status(200).json({success:true,message:"user logout all device successfully!"});
+    } catch (error) {
+        next(new HttpError(error.message, 500));
+    }
+}
+
+const allUser = async(req,res,next)=>{
+    try {
+        const users = await User.find({});
+        if(users.length===0){
+            return next(new HttpError("user not found",404));
+        }
+        res.status(200).json({success:true,message:"user data fetched successfully!!",users});
+    } catch (error) {
+        next(new HttpError(error.message, 500));
+    }
+}
+
+const updateUser = async(req,res,next)=>{
+    try {
+        const user = req.user;
+        if(!user){
+            return next(new HttpError("user not found",404));
+        }
+
+        const updates = Object.keys(req.body);
+
+        const allowed = ["name","password","phone"];
+
+        const isValid = updates.every((field)=>{
+            return allowed.includes(field);
+        })
+        if(!isValid){
+            return next(new HttpError("only allowed field can be updated",400));
+        }
+        updates.forEach((update)=>{
+            user[update] = req.body[update];
+        });
+        await user.save();
+        res.status(200).json({success:true,message:"user data updated successfully!",user})
+    } catch (error) {
+        next(new HttpError(error.message,500));
+    }
+}
+const deleteUser = async(req,res,next)=>{
+    try {
+        const user = req.user;
+        if(!user){
+            return next(new HttpError("user not found",404));
+        }
+        await user.deleteOne();
+        res.status(200).json({success:true,message:"user delete successfully!"})
+    } catch (error) {
+        next(new HttpError(error.message,500));
+    }
+}
+export default {add,login,authLogin,logOut,logOutAll,allUser,updateUser,deleteUser};
