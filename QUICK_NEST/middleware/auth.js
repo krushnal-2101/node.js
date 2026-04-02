@@ -33,6 +33,7 @@ const auth = async function (req, res, next) {
     await user.save();
 
     next();
+    
   } catch (error) {
     next(new HttpError("please authenticate", 401));
   }

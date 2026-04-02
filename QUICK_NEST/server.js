@@ -4,6 +4,7 @@ import express from "express";
 import HttpError from "./middleware/HttpError.js";
 import connectDB from "./config/db.js";
 import userRouter from "./Routes/userRoutes.js";
+import adminRoutes from "./Routes/adminRoutes.js"
 
 dotenv.config({ path: "./.env" });
 
@@ -19,13 +20,16 @@ app.use(express.json());
 
 app.use("/user", userRouter);
 
+app.use("/admin", adminRoutes);
+
 app.get("/", (req, res) => {
   res.json("hello from server");
 });
 
-app.use((req, res, next) => {
+app.use(( req, res, next) => {
   return next(new HttpError("requested route not found", 404));
 });
+
 
 app.use((error, req, res, next) => {
   if (res.headersSent) {

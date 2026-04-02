@@ -9,25 +9,43 @@ const userSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
+
     email: {
       type: String,
       required: true,
       unique: true,
       trim: true,
     },
+
     password: {
       type: String,
       required: true,
     },
+
     phone: {
       type: Number,
       required: true,
     },
+
     roll: {
       type: String,
       enum: ["customer", "provider", "admin", "super-admin"],
       default: "customer",
     },
+
+    profilePic: {
+      type: String,
+    },
+
+    cloudinaryId: {
+      type: String,
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+
     tokens: [
       {
         token: {
@@ -36,19 +54,20 @@ const userSchema = mongoose.Schema(
         },
       },
     ],
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
   },
+
   { timestamps: true },
 );
 
+
 userSchema.pre("save", async function () {
-  if (this.isModified("password")) {
-    this.password = await bcrypt.hash(this.password, 8);
+  const user = this;
+
+  if (user.isModified("password")) {
+    user.password = await bcrypt.hash(user.password, 8);
   }
 });
+
 
 userSchema.statics.findByCredentials = async function (email, password) {
   try {
@@ -70,38 +89,52 @@ userSchema.statics.findByCredentials = async function (email, password) {
   }
 };
 
+
 userSchema.methods.generateAuthToken = async function () {
   try {
     const user = this;
 
     const token = jwt.sign(
-      { _id: user._id.toString() },
+      {
+        _id: user._id.toString(),
+        roll: user.roll,
+      },
       process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      },
     );
-
-    if (!token) {
-      throw new Error("Failed to generate auth token");
-    }
 
     user.tokens = user.tokens.concat({ token });
 
     await user.save();
+
+    return token;
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-userSchema.methods.toJSON = function(){
-    const user = this;
-    const userObject = user.toObject();
 
-    delete userObject.password;
-    delete userObject.createAt;
-    delete userObject.updateAt;
-    delete userObject.tokens;
+userSchema.methods.toJSON = function () {
+  const user = this;
 
-    return userObject;
-}
+  const userObject = user.toObject();
+
+  delete userObject.password;
+
+  delete userObject.createdAt;
+
+  delete userObject.updatedAt;
+
+  delete userObject.__v;
+
+  delete userObject.tokens;
+
+  return userObject;
+};
+
+
 const User = mongoose.model("User", userSchema);
 
 export default User;

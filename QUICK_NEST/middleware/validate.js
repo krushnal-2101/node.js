@@ -4,7 +4,7 @@ import HttpError from "./HttpError.js";
 const validate = (schema) => (req, res, next)=> {
     try{
         const { value, error} = schema.validate(req.body,{
-            abortEarly: false,
+            abortEarly: true,
             allowUnkown: false,
             stripUnknown: true,
         })
@@ -12,8 +12,10 @@ const validate = (schema) => (req, res, next)=> {
             return next(new HttpError(error.details[0].message, 400))
         }
 
-        req.body = value;
+       
         next()
+        return value;
+        
     }catch(error){
         throw new Error(error.message)
     }
