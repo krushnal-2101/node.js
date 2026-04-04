@@ -1,10 +1,10 @@
 import dotenv from "dotenv";
 import express from "express";
-
 import HttpError from "./middleware/HttpError.js";
 import connectDB from "./config/db.js";
 import userRouter from "./Routes/userRoutes.js";
 import adminRoutes from "./Routes/adminRoutes.js"
+
 
 dotenv.config({ path: "./.env" });
 

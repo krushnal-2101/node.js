@@ -4,17 +4,19 @@ import User from "../model/User.js";
 
 const add = async (req, res, next) => {
     try {
-        const { name, email, password, roll, phone } = req.body;
+        const { name, email, password, role, phone } = req.body;
 
         const newUser = {
             name,
             email,
             password,
-            roll,
+            role,
             phone,
             profilePic: req.file ? req.file.path : "undefined",
-            cloudinaryId: req.file ? req.file.fileName : "undefined",
+            cloudinaryId: req.file ? req.file.filename : "undefined",
         };
+
+        console.log("cloudinaryId", newUser.cloudinaryId)
 
         const user = new User(newUser);
 
@@ -26,23 +28,27 @@ const add = async (req, res, next) => {
     }
 };
 
+
+
 const login = async (req, res, next) => {
-    try {
-        const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-        const user = await User.findByCredentials(email, password);
+    const user = await User.findByCredentials(email, password);
 
-        const token = await user.generateAuthToken();
+    const token = await user.generateAuthToken();
 
-        if (!user) {
-            throw new Error("unable to login");
-        }
-        res.status(200).json({ success: true, message: "successfully login!!", user, token });
-        
-    } catch (error) {
-        next(new HttpError(error.message, 500));
+    if (!user) {
+      return next(new HttpError("unable to login"));
     }
-}
+
+    res.status(200).json({ success: true, user, token });
+  } catch (error) {
+    next(new HttpError(error.message, 500));
+  }
+};
+
+
 
 const authLogin = async (req, res, next) => {
 
@@ -60,6 +66,8 @@ const authLogin = async (req, res, next) => {
         next(new HttpError(error.message, 500));
     }
 }
+
+
 
 const logOut = async (req, res, next) => {
     try {
@@ -79,6 +87,8 @@ const logOut = async (req, res, next) => {
     }
 }
 
+
+
 const logOutAll = async (req, res, next) => {
     try {
         req.user.tokens = [];
@@ -94,25 +104,25 @@ const logOutAll = async (req, res, next) => {
     }
 }
 
+
+
 const allUser = async (req, res, next) => {
+  try {
+    const users = await User.find({});
 
-    try {
-
-        const users = await User.find({});
-
-        if (users.length === 0) {
-
-            return next(new HttpError("user not found", 404));
-
-        }
-        res.status(200).json({ success: true, message: "user data fetched successfully!!", users });
-
-    } catch (error) {
-
-        next(new HttpError(error.message, 500));
-
+    if (users.length === 0) {
+      res.status(200).json({ success: true, message: "no user data found" });
     }
-}
+
+    res
+      .status(200)
+      .json({ success: true, message: "all user data fetched", users });
+  } catch (error) {
+    next(new HttpError(error.message, 500));
+  }
+};
+
+
 
 const updateUser = async (req, res, next) => {
     try {
@@ -143,6 +153,14 @@ const updateUser = async (req, res, next) => {
 
         });
 
+        if(!req,file){
+            await cloudinary.uploader.destroy(user.cloudinaryId)
+
+            user.profilePic = req.file.path;
+
+            user.cloudinaryId = req.file.fileName
+        }
+
         await user.save();
 
         res.status(200).json({ success: true, message: "user data updated successfully!", user })
@@ -151,21 +169,26 @@ const updateUser = async (req, res, next) => {
         next(new HttpError(error.message, 500));
     }
 }
+
+
+
 const deleteUser = async (req, res, next) => {
-    
-    try {
-        const user = req.user;
+  try {
+    const user = req.user;
 
-        if (!user) {
-            return next(new HttpError("user not found", 404));
+    await User.deleteOne(user);
 
-        }
-        await user.deleteOne();
+    await cloudinary.uploader.destroy(user.cloudinaryId);
 
-        res.status(200).json({ success: true, message: "user delete successfully!" })
+    res
+      .status(200)
+      .json({ success: true, message: "user deleted successfully" });
+  } catch (error) {
+    next(new HttpError(error.message, 500));
+  }
+};
 
-    } catch (error) {
-        next(new HttpError(error.message, 500));
-    }
-}
+
+
+
 export default { add, login, authLogin, logOut, logOutAll, allUser, updateUser, deleteUser };

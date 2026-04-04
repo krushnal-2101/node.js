@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import HttpError from "./HttpError.js";
 import User from "../model/User.js";
-
+import dotenv from "dotenv";
 
 
 
@@ -10,7 +10,7 @@ const auth = async function (req, res, next) {
     const authHeader = req.header("Authorization");
 
     if (!authHeader) {
-      return next(new HttpError("auth header is required", 401));     
+      return next(new HttpError("auth header is required", 401));
     }
 
     const token = authHeader.replace("Bearer ", "");
@@ -33,7 +33,7 @@ const auth = async function (req, res, next) {
     await user.save();
 
     next();
-    
+
   } catch (error) {
     next(new HttpError("please authenticate", 401));
   }

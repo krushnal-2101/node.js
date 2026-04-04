@@ -35,10 +35,10 @@ router.get(
 );
 
 router.patch(
-  "/update",
+  "/updateUser",
   auth,
   validate(updateUserSchema),
-  userController.update,
+  userController.updateUser,
 );
 
 router.delete("/delete", auth, userController.deleteUser);
