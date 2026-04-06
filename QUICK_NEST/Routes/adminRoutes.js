@@ -2,7 +2,9 @@ import express from "express";
 
 import auth from "../middleware/auth.js";
 import checkRole from "../middleware/checkRole.js";
+
 import adminController from "../controller/adminController.js";
+import categoryController from "../controller/categoryController.js";
 
 const router = express.Router();
 
@@ -20,4 +22,10 @@ router.delete(
   adminController.deleteUser,
 );
 
+router.post(
+  "/add",
+  auth,
+  checkRole("admin", "super_admin"),
+  categoryController.add,
+);
 export default router;
