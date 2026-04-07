@@ -5,14 +5,23 @@ const add = async (req, res, next)=> {
     try{
         const {name, description } = req.body;
 
-        const newCategory = Category.create({
+        const existingCategory = await Category.findOne({ name });
+
+        if(existingCategory){
+            return next(new HttpError("category already existed", 500))
+        }
+
+        const newCategory = new Category({
             name,
             description,
         });
 
+        await newCategory.save()
+
         res
         .status(201)
         .json({success: true, message: "new category added", newCategory})
+        
     }catch(error){
         next(new HttpError(error.message, 500))
     }

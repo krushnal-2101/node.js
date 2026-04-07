@@ -5,6 +5,7 @@ import checkRole from "../middleware/checkRole.js";
 
 import adminController from "../controller/adminController.js";
 import categoryController from "../controller/categoryController.js";
+import serviceController from "../controller/serviceController.js";
 
 const router = express.Router();
 
@@ -28,4 +29,13 @@ router.post(
   checkRole("admin", "super_admin"),
   categoryController.add,
 );
+
+router.post(
+  "/add",
+  auth,
+  checkRole("admin", "super_admin"),
+  serviceController.add,
+)
+
+
 export default router;
