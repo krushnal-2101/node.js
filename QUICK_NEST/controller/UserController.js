@@ -126,7 +126,10 @@ const allUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
     try {
-        const user = req.user;
+      
+        const targetedUser = req.user._id || req.params.id;
+
+        const user = await User.findById(targetedUser)
 
         if (!user) {
             return next(new HttpError("user not found", 404));
@@ -134,7 +137,11 @@ const updateUser = async (req, res, next) => {
 
         const updates = Object.keys(req.body);
 
-        const allowed = ["name", "password", "phone"];
+        const allowed = ["name", "password", "phone", "profilePic"];
+
+        if(req.user.role === "admin" || req.user.role === "super_admin"){
+            allowed = [...allowed, "role", ]
+        }
 
         const isValid = updates.every((field) => {
 

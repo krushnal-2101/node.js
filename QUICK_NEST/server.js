@@ -10,6 +10,7 @@ dotenv.config({ path: "./.env" });
 
 
 import dns from "dns"
+import Category from "./model/Category.js";
 
 dns.setServers(["1.1.1.1","8.8.8.8"])
 
@@ -56,6 +57,15 @@ async function startServer() {
     process.exit(1);
   }
 }
-
 startServer();
 
+
+
+const check = async()=> {
+  const category = await Category.findById("69d5ef24f109838d1d873558").populate(
+    "services", "name description price - _id - category"
+  );
+   console.log(category.services)
+};
+
+check()

@@ -25,7 +25,11 @@ const serviceSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
-})
+},
+);
+
+
+    
 
 const Service = mongoose.model("Services", serviceSchema);
 
