@@ -31,21 +31,21 @@ const add = async (req, res, next) => {
 
 
 const login = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    const user = await User.findByCredentials(email, password);
+        const user = await User.findByCredentials(email, password);
 
-    const token = await user.generateAuthToken();
+        const token = await user.generateAuthToken();
 
-    if (!user) {
-      return next(new HttpError("unable to login"));
+        if (!user) {
+            return next(new HttpError("unable to login"));
+        }
+
+        res.status(200).json({ success: true, user, token });
+    } catch (error) {
+        next(new HttpError(error.message, 500));
     }
-
-    res.status(200).json({ success: true, user, token });
-  } catch (error) {
-    next(new HttpError(error.message, 500));
-  }
 };
 
 
@@ -100,33 +100,33 @@ const logOutAll = async (req, res, next) => {
     } catch (error) {
 
         next(new HttpError(error.message, 500));
-        
+
     }
 }
 
 
 
 const allUser = async (req, res, next) => {
-  try {
-    const users = await User.find({});
+    try {
+        const users = await User.find({});
 
-    if (users.length === 0) {
-      res.status(200).json({ success: true, message: "no user data found" });
+        if (users.length === 0) {
+            res.status(200).json({ success: true, message: "no user data found" });
+        }
+
+        res
+            .status(200)
+            .json({ success: true, message: "all user data fetched", users });
+    } catch (error) {
+        next(new HttpError(error.message, 500));
     }
-
-    res
-      .status(200)
-      .json({ success: true, message: "all user data fetched", users });
-  } catch (error) {
-    next(new HttpError(error.message, 500));
-  }
 };
 
 
 
 const updateUser = async (req, res, next) => {
     try {
-      
+
         const targetedUser = req.user._id || req.params.id;
 
         const user = await User.findById(targetedUser)
@@ -139,8 +139,8 @@ const updateUser = async (req, res, next) => {
 
         const allowed = ["name", "password", "phone", "profilePic"];
 
-        if(req.user.role === "admin" || req.user.role === "super_admin"){
-            allowed = [...allowed, "role", ]
+        if (req.user.role === "admin" || req.user.role === "super_admin") {
+            allowed = [...allowed, "role",]
         }
 
         const isValid = updates.every((field) => {
@@ -151,8 +151,17 @@ const updateUser = async (req, res, next) => {
         if (!isValid) {
 
             return next(new HttpError("only allowed field can be updated", 400));
-
         }
+
+
+        if (
+            !req.user.role === "admin" &&
+            !req.user.role === "super_admin" &&
+            !req.user._id.toString() !== user._id.toString()
+        ) {
+            return next(new HttpError("unauthorized access", 401));
+        }
+
 
         updates.forEach((update) => {
 
@@ -160,7 +169,7 @@ const updateUser = async (req, res, next) => {
 
         });
 
-        if(!req,file){
+        if (!req, file) {
             await cloudinary.uploader.destroy(user.cloudinaryId)
 
             user.profilePic = req.file.path;
@@ -180,19 +189,19 @@ const updateUser = async (req, res, next) => {
 
 
 const deleteUser = async (req, res, next) => {
-  try {
-    const user = req.user;
+    try {
+        const user = req.user;
 
-    await User.deleteOne(user);
+        await User.deleteOne(user);
 
-    await cloudinary.uploader.destroy(user.cloudinaryId);
+        await cloudinary.uploader.destroy(user.cloudinaryId);
 
-    res
-      .status(200)
-      .json({ success: true, message: "user deleted successfully" });
-  } catch (error) {
-    next(new HttpError(error.message, 500));
-  }
+        res
+            .status(200)
+            .json({ success: true, message: "user deleted successfully" });
+    } catch (error) {
+        next(new HttpError(error.message, 500));
+    }
 };
 
 

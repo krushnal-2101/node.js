@@ -54,18 +54,10 @@ async function startServer() {
     });
   } catch (error) {
     console.log(error);
-    process.exit(1);
+    process.exit(1);  
   }
 }
 startServer();
 
 
 
-const check = async()=> {
-  const category = await Category.findById("69d5ef24f109838d1d873558").populate(
-    "services", "name description price - _id - category"
-  );
-   console.log(category.services)
-};
-
-check()
