@@ -3,39 +3,43 @@ import HttpError from "../middleware/HttpError.js";
 import Category from "../model/Category.js";
 import Service from "../model/Services.js";
 
-const add  = async(req, res, next)=> {
-   try{
-     const {name, description, price, duration, isActive, category} = req.body;
-     
-     const existingService = await Service.findOne({ name })
+const add = async (req, res, next) => {
+  try {
+    const { name, description, price, duration, isActive, category } = req.body;
 
-     if (existingService){
-        return next(new HttpError("service is already exist", 500))
-     }
-     const existingServices = await Category.findById(category);
+    const existingService = await Service.findOne({ name });
 
-     if(!existingServices){
-        return next(new HttpError("category is existed", 500))
-     }
+    if (existingService) {
+      return next(new HttpError("Service already exists", 400));
+    }
 
-     const newService = new Service({
-        name,
-        description,
-        price,
-        duration,
-        isActive,
-        category,
-     })
+    const existingCategory = await Category.findById(category);
 
-     await newServic.save()
+    if (!existingCategory) {
+      return next(new HttpError("Category does not exist", 404));
+    }
 
-     res
-     .status(201)
-     .json({success: true, message: "new service added", newService})
-   }catch (error){
-    next(new HttpError(error.message, 500))
-   }
-}
+    const newService = new Service({
+      name,
+      description,
+      price,
+      duration,
+      isActive,
+      category,
+    });
+
+    await newService.save();
+
+    res.status(201).json({
+      success: true,
+      message: "New service added",
+      newService,
+    });
+
+  } catch (error) {
+    next(new HttpError(error.message, 500));
+  }
+};
 
 
 const getAll = async (req, res, next) => {

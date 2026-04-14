@@ -66,7 +66,7 @@ const getById = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const  id  = req.params.id;
 
     let category = await Category.findById(id);
 
