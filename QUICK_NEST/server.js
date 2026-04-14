@@ -4,13 +4,12 @@ import HttpError from "./middleware/HttpError.js";
 import connectDB from "./config/db.js";
 import userRouter from "./Routes/userRoutes.js";
 import adminRoutes from "./Routes/adminRoutes.js"
-
+import bookingRoutes from "./Routes/bookingRoutes.js";
 
 dotenv.config({ path: "./.env" });
 
-
 import dns from "dns"
-import Category from "./model/Category.js";
+
 
 dns.setServers(["1.1.1.1","8.8.8.8"])
 
@@ -22,6 +21,8 @@ app.use(express.json());
 app.use("/user", userRouter);
 
 app.use("/admin", adminRoutes);
+
+app.use("/booking", bookingRoutes);
 
 app.get("/", (req, res) => {
   res.json("hello from server");
