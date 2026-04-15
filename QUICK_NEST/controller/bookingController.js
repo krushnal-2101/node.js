@@ -162,4 +162,27 @@ const getBookingByService = async (req, res, next) => {
   }
 };
 
-export default {createBooking, getAllBookings, getBookingByService };
+
+const bookingByUserId = async (req, res, next) => {
+    try{
+        let booking;
+
+        let userId = req.user.id || req.params.id;
+
+        booking = await Booking.find({ userId })
+
+        if(!booking){
+            return next(new HttpError("no booking data found", 404))
+        }
+
+        res.status(200)
+        .json({
+            success: true,
+            message: "booking data fetched successfully"
+        })
+    }catch(error){
+        next(new HttpError(error.message, 500))
+    }
+}
+
+export default {createBooking, getAllBookings, getBookingByService, bookingByUserId};

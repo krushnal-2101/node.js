@@ -17,4 +17,6 @@ router.get(
   bookingController.getBookingByService,
 );
 
+router.get("/user", auth, bookingController.bookingByUserId)
+
 export default router;             
