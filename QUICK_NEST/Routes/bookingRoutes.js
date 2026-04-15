@@ -7,4 +7,14 @@ const router = express.Router();
 
 router.post("/create", auth, bookingController.createBooking);
 
-export default router;
+// get all booking
+
+router.get("/allBookings", auth, bookingController.getAllBookings);
+
+router.get(
+  "/allBookingByService/:id",
+  auth,
+  bookingController.getBookingByService,
+);
+
+export default router;             

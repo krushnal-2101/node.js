@@ -25,6 +25,8 @@ const createBooking = async (req, res, next) => {
             );
         }
 
+
+
         const startOfDay = new Date(bookingDate);
         startOfDay.setHours(0, 0, 0, 0);
 
@@ -78,4 +80,86 @@ const createBooking = async (req, res, next) => {
     }
 };
 
-export default { createBooking };
+
+const getAllBookings = async (req, res, next) => {
+  try {
+    let bookings;
+
+    let role = req.user.role;
+
+    if (role === "admin" || role === "super_admin") {
+      bookings = await Booking.find({}).populate([
+        { path: "serviceId", select: "name price description duration" },
+        {
+          path: "userId",
+          select: "name email phone",
+        },
+      ]);
+    } else if (role === "customer") {
+      bookings = await Booking.find({ userId: req.user._id }).populate(
+        "serviceId",
+        "name price duration description",
+      );
+    } else {
+      return next(new HttpError("unAuthorized access", 401));
+    }
+
+    if (bookings.length === 0) {
+      return res
+        .status(200)
+        .json({ success: true, message: "no booking data found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "all bookings fetched successfully",
+      bookings,
+    });
+  } catch (error) {
+    next(new HttpError(error.message, 500));
+  }
+};
+
+
+const getBookingByService = async (req, res, next) => {
+  try {
+    let bookings;
+
+    let role = req.user.role;
+
+    let serviceId = req.params.id;
+
+    console.log("service id",serviceId)
+
+    if (role === "admin" || role === "super_admin") {
+      bookings = await Booking.find({serviceId}).populate([
+        { path: "serviceId", select: "name price duration" },
+        {
+          path: "userId",
+          select: "name email phone",
+        },
+      ]);
+
+      console.log("admin data",bookings)
+
+    } else if (role === "customer") {
+      bookings = await Booking.find({
+        userId: req.user._id,
+        serviceId: serviceId,
+      }).populate("serviceId", "name price duration");
+    } else {
+      return next(new HttpError("unAuthorized access", 401));
+    }
+
+
+    res.status(200).json({
+      success: true,
+      message: "all bookings fetched successfully",
+      bookings,
+    });
+  } catch (error) {
+    next(new HttpError(error.message, 500));
+  }
+};
+
+export default {createBooking, getAllBookings, getBookingByService };
