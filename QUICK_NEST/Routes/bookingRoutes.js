@@ -12,9 +12,9 @@ router.post("/create", auth, bookingController.createBooking);
 router.get("/allBookings", auth, bookingController.getAllBookings);
 
 router.get(
-  "/allBookingByService/:id",
+  "/allBookingByServiceId/:id",
   auth,
-  bookingController.getBookingByService,
+  bookingController.getBookingByServiceId,
 );
 
 router.get("/user", auth, bookingController.bookingByUserId)
