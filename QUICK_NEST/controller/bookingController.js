@@ -121,6 +121,7 @@ const getAllBookings = async (req, res, next) => {
 };
 
 
+
 const getBookingByServiceId = async (req, res, next) => {
   try {
     let bookings;
@@ -165,6 +166,7 @@ const getBookingByServiceId = async (req, res, next) => {
     next(new HttpError(error.message, 500));
   }
 };
+
 
 
 const getBookingById = async (req, res, next) => {
@@ -214,6 +216,7 @@ const getBookingById = async (req, res, next) => {
 };
 
 
+
 const bookingByUserId = async (req, res, next) => {
   try {
     let booking;
@@ -245,6 +248,7 @@ const bookingByUserId = async (req, res, next) => {
     next(new HttpError(error.message, 500));
   }
 };
+
 
 
 const confirmBookingStatus = async (req, res, next) => {
@@ -329,5 +333,110 @@ const cancelBookingStatus = async (req, res, next) => {
   } catch (error) {
     next(new HttpError(error.message, 500));
   }
+} 
+
+
+
+
+
+const availableTimeSlots = async (req, res, next) => {
+
+  try {
+
+    const { serviceId, bookingDate } = req.query;
+
+
+    const service = await Service.findById(serviceId)
+
+
+    if (!service) {
+
+      return next(new HttpError("service not found", 404))
+
+    }
+
+    const startOfDay = new Date(bookingDate);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(bookingDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+
+    const existingBooking = await Booking.find({
+      serviceId,
+      bookingDate: { $gte: startOfDay, $lt: endOfDay },
+      status: { $in: ["pending", "confirmed"] }
+    })
+
+
+    const bookedTimeSlot = existingBooking.map((b) => b.timeSlot)
+
+
+    const TotalTimeSlots = [
+      "9:00-10:00",
+      "10:00-11:00",
+      "11:00-12:00",
+      "12:00-13:00",
+      "13:00-14:00",
+      "14:00-15:00",
+      "15:00-16:00",
+      "16:00-17:00",
+      "17:00-18:00",]
+
+    const availableTimeSlots = TotalTimeSlots.filter((b) => !bookedTimeSlot.includes(b))
+
+
+    if (!availableTimeSlots.length) {
+
+      return res.status(200).json({ success: true, message: "currently no time slots available", slots: [] })
+
+    }
+
+    res.status(200).json({ success: true, message: "available time slots fetched successfully", availableTimeSlots })
+
+  } catch (error) {
+    next(new HttpError(error.message, 500));
+  }
 }
-export default { createBooking, getAllBookings, getBookingByServiceId, bookingByUserId, cancelBookingStatus, confirmBookingStatus  };
+
+
+
+const completeBooking = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+
+    const booking = await Booking.findById(id);
+
+    if (!booking) {
+      return next(new HttpError("No Booking Data Founded..!", 404));
+    }
+
+    if (booking.status === "complete") {
+      return next(new HttpError("Booking already Completed", 400));
+    }
+
+    if (booking.status === "cancel") {
+      return next(
+        new HttpError("Booking Already cancelled you can't complete it", 400),
+      );
+    }
+
+    if (booking.status === "pending" || booking.status === "confirm") {
+      booking.status = "complete";
+    }
+
+    await booking.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Booking Completed Successfully...!",
+      booking,
+    });
+  } catch (error) {
+    next(new HttpError(error.message));
+  }
+};
+
+
+
+export default { createBooking, getAllBookings, getBookingByServiceId, getBookingById, bookingByUserId, cancelBookingStatus, confirmBookingStatus, availableTimeSlots, completeBooking  };
