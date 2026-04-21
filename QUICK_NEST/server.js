@@ -5,6 +5,7 @@ import connectDB from "./config/db.js";
 import userRouter from "./Routes/userRoutes.js";
 import adminRoutes from "./Routes/adminRoutes.js"
 import bookingRoutes from "./Routes/bookingRoutes.js";
+import providerRoutes from "./Routes/providerRoutes.js"
 
 dotenv.config({ path: "./.env" });
 
@@ -23,6 +24,8 @@ app.use("/user", userRouter);
 app.use("/admin", adminRoutes);
 
 app.use("/booking", bookingRoutes);
+
+app.use('/provider', providerRoutes)
 
 app.get("/", (req, res) => {
   res.json("hello from server");

@@ -3,7 +3,7 @@ import HttpError from "../middleware/HttpError.js";
 import Service from "../model/Services.js";
 import Provider from "../model/Provider.js";
 
-const registerProvider = (req, res, next)=> {
+const registerProvider = async (req, res, next)=> {
     try{
         const id  = req.params._id;
 
@@ -41,6 +41,7 @@ const registerProvider = (req, res, next)=> {
             documents
         })
 
+        user.role = "provider"
 
         await new Provider.save();
 
@@ -50,5 +51,7 @@ const registerProvider = (req, res, next)=> {
         next(new HttpError(error.message, 500))
     }
 } 
+
+
 
 export default { registerProvider }

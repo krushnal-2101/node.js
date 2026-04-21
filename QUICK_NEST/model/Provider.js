@@ -1,28 +1,38 @@
-import mongoose, { mongo } from "mongoose";
-import { boolean, ref, required } from "joi";
+import mongoose from "mongoose";
 
-const Provider  = new mongoose.Schema({
+
+const ProviderSchema = new mongoose.Schema({
+
     userId: {
-        type: mongoose.Schema.Types.ObjectId(),
-        required: "User",
-        ref: true,
-    },
-    service: {
-        type: mongoose.Schema.Types.ObjectId(),
-        ref: true,
-    },
-    experience: {
-        type: Number,
-        default: 0,
-    },
-    documents: {
-        type: String,
+        type:mongoose.Schema.Types.ObjectId,
+        ref: "User",
         required: true,
     },
-    isVarified:{
-        type: boolean,
+    services: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Services",
+        }
+    ],
+    experience: {
+
+        type: Number,
+        default: 0
+
+    },
+    documents: [
+        {
+            type: String,
+        }
+    ],
+
+    isVerified: {
+        type: Boolean,
         default: false,
     }
 })
 
-export default Provider
+const Provider = mongoose.model("Provider", ProviderSchema)
+
+
+export default Provider;

@@ -1,6 +1,8 @@
 import cloudinary from "../config/cloudinary.js";
 import HttpError from "../middleware/HttpError.js";
 import User from "../model/User.js";
+import sendEmail from "../utils/sendEmail.js";
+import { getWelcomeEmailTemplate } from "../service/emailTemplate.js"
 
 const add = async (req, res, next) => {
     try {
@@ -16,13 +18,20 @@ const add = async (req, res, next) => {
             cloudinaryId: req.file ? req.file.filename : "undefined",
         };
 
+
         console.log("cloudinaryId", newUser.cloudinaryId)
 
         const user = new User(newUser);
 
         await user.save();
 
-        res.status(201).json({ success: true, user });
+        sendEmail({
+            to: newUser.email,
+            subject: "welcome to QuickNest",
+            html: getWelcomeEmailTemplate(newUser.name)
+        })
+
+        res.status(201).json({ success: true, user }); 
     } catch (error) {
         next(new HttpError(error.message, 500));
     }
@@ -203,7 +212,6 @@ const deleteUser = async (req, res, next) => {
         next(new HttpError(error.message, 500));
     }
 };
-
 
 
 
