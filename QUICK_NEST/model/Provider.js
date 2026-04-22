@@ -12,6 +12,7 @@ const ProviderSchema = new mongoose.Schema({
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Services",
+            required: true,
         }
     ],
     experience: {

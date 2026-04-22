@@ -42,13 +42,13 @@ router.get("/timeSlots", auth, bookingController.availableTimeSlots)
 
 // confirm booking
 
-router.post("/confirmBooking/:id", auth, checkRole("admin", "super_admin"), bookingController.confirmBooking);
+router.post("/confirmBooking/:id", auth, checkRole("admin", "super_admin"), bookingController.confirmBookingStatus);
 
 
 // cancelled booking 
 
 
-router.post("/cancelledBooking/:id", auth, checkRole("admin", "super_admin"), bookingController.cancelledBooking);
+router.post("/cancelledBooking/:id", auth, checkRole("admin", "super_admin"), bookingController.cancelBookingStatus);
 
 
 

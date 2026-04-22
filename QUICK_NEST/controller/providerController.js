@@ -53,5 +53,30 @@ const registerProvider = async (req, res, next)=> {
 } 
 
 
+const getProvider = async (req, res, next) => {
 
-export default { registerProvider }
+    try{
+
+        let query = {};
+
+        let  { isVerified } = req.query;
+
+        
+        if(isVerified){
+            query.isVerified = isVerified === "true";
+        }
+
+        const provider = await Provider.find(query).populate([{ path: "userId", select: "name email phone"}, { path: "services", select: "name"}])
+
+        if(!provider.length) {
+            return next (new HttpError("no provider data found", 404))
+        }
+
+      res.status(200).json({ success: true, message: "provider details fetched successfully", length: providers.length, providers })
+    }catch(error){
+        next (new HttpError(error.message, 500))
+    }
+}
+
+
+export default { registerProvider, getProvider }
