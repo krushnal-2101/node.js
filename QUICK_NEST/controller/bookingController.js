@@ -1,12 +1,13 @@
 import Service from "../model/Services.js";
 import HttpError from "../middleware/HttpError.js";
 import Booking from "../model/Booking.js";
+import sendWhatsAppMessage from "../utils/sendWhatsAppMessage.js";
 
 
 
 const createBooking = async (req, res, next) => {
   try {
-    const { serviceId, bookingDate, timeSlot, notes } = req.body;
+    const { serviceId, bookingDate, timeSlot, notes, } = req.body;
 
     const userId = req.user._id;
 
@@ -75,6 +76,9 @@ const createBooking = async (req, res, next) => {
       message: "service booked successfully",
       newBooking,
     });
+
+    await sendWhatsAppMessage(newBooking.userId.phone, "BOOKING HAS BEEN CREATED SUCCESSFULLY")
+    
   } catch (error) {
     next(new HttpError(error.message, 500));
   }

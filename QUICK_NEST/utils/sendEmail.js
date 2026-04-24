@@ -6,7 +6,7 @@ const sendEmail = async ({ to, subject, html }) => {
     try {
 
         const info = await transporter.sendMail({
-            from:'Quick Nest "rnw.shivam.s@gmail.com"',
+            from:'Quick Nest "krushnalbhattiit2@gmail.com"',
             to,
             subject,
             html
