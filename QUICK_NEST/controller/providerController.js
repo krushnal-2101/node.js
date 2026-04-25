@@ -79,6 +79,98 @@ const getProvider = async (req, res, next) => {
 }
 
 
+const updateProvider = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const role = req.user.role;
+    const loginUserId = req.user._id;
+
+    const provider = await Provider.findById(id);
+    if (!provider) {
+      return next(new HttpError("Provider not found", 404));
+    }
 
 
-export default { registerProvider, getProvider }
+
+    if (
+      role !== "admin" &&
+      role !== "super_admin" &&
+      provider.userId.toString() !== loginUserId.toString()
+    ) {
+      return next(new HttpError("Unauthorized access", 403));
+    }
+
+    const updates = Object.keys(req.body);
+    let allowedFields = ["service", "experience", "documents"];
+
+
+    if (role === "admin" || role === "super_admin") {
+      allowedFields.push("isVerified");
+    }
+
+    const isValid = updates.every((field) => allowedFields.includes(field));
+    if (!isValid) {
+      return next(new HttpError("Only allowed fields can be updated", 400));
+    }
+
+
+    if (req.body.service) {
+      if (!Array.isArray(req.body.service) || req.body.service.length === 0) {
+        return next(new HttpError("Service must be a non-empty array", 400));
+      }
+      const validServices = await Service.find({ _id: { $in: req.body.service } }).select("_id");
+      if (validServices.length !== req.body.service.length) {
+        return next(new HttpError("One or more services are invalid", 400));
+      }
+      provider.service = validServices.map((s) => s._id);
+      updates.splice(updates.indexOf("service"), 1); // already handled
+    }
+
+    updates.forEach((field) => {
+      if (field !== "service") provider[field] = req.body[field];
+    });
+
+    await provider.save();
+    await provider.populate("userId", "name email phone role");
+    await provider.populate("service", "name price duration");
+
+    res.status(200).json({ success: true, message: "Provider updated successfully", provider });
+  } catch (error) {
+    next(new HttpError(error.message, 500));
+  }
+};
+
+const deleteProvider = async (req, res, next) => {
+    try{
+        const { id } = req.params;
+        const role = req.user.role;
+        const loginUserId = req.user._id;
+
+        const provider = await Provider.findById(id)
+
+        if(!provider){
+            return next(new HttpError("Provider not found", 404))
+        }
+
+        if(
+            role !== "admin" &&
+            role !== "super_admin" && 
+            provider.userId.toString() !== loginUserId.toString()
+        ){
+            return next(new HttpError("Unauthorized access", 403))
+        }
+
+        await User.findByIdAndUpdate(provider.userId, { role: "customer"})
+
+        await Provider.findByIdAndDelete(id);
+
+        res.status(200).json({
+            success: true,
+            message:"Provider deleted successfully"
+        })
+    }catch(error){
+        next( new HttpError(error.message))
+    }
+}
+
+export default { registerProvider, getProvider, updateProvider, deleteProvider }

@@ -11,4 +11,8 @@ router.post("/registerAsProvider", auth , providerController.registerProvider)
 
 router.get("/getProviders", auth, checkRole("admin", "super_admin"), providerController.getProvider)
 
+router.get("/updateProvider", auth, checkRole("admin",  "super_admin"), providerController.updateProvider)
+
+router.get("/deleteProvider", auth, checkRole("admin ", "super_admin"), providerController.deleteProvider)
+
 export default router;
