@@ -6,10 +6,14 @@ import userRouter from "./Routes/userRoutes.js";
 import adminRoutes from "./Routes/adminRoutes.js"
 import bookingRoutes from "./Routes/bookingRoutes.js";
 import providerRoutes from "./Routes/providerRoutes.js"
+import helmet from "helmet";
+import hpp from "hpp";
+
 
 dotenv.config({ path: "./.env" });
 
 import dns from "dns"
+import {rateLimit} from "express-rate-limit";
 
 
 dns.setServers(["1.1.1.1","8.8.8.8"])
@@ -18,6 +22,20 @@ dns.setServers(["1.1.1.1","8.8.8.8"])
 const app = express();
 
 app.use(express.json());
+
+
+
+// convert json data
+
+app.use(rateLimit())
+
+app.use(helmet())
+
+app.use(hpp())
+
+
+
+
 
 app.use("/user", userRouter);
 

@@ -1,5 +1,4 @@
 import express from "express";
-
 import userController from "../controller/userController.js";
 import validate from "../middleware/validate.js";
 import auth from "../middleware/auth.js";
@@ -10,6 +9,8 @@ import {
   updateUserSchema,
 } from "../validation/userSchema.js";
 
+import { authlimiter } from "../middleware/rateLimit.js";
+
 const router = express.Router();
 
 router.post(
@@ -19,9 +20,9 @@ router.post(
   userController.add,
 );
 
-router.post("/login", userController.login);
+router.post("/login",authlimiter, userController.login);
 
-router.get("/authLogin", auth, userController.authLogin);
+router.get("/authLogin",authlimiter, auth, userController.authLogin);
 
 router.post("/logOut", auth, userController.logOut);
 
