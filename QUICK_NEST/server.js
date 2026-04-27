@@ -20,7 +20,7 @@ dns.setServers(["1.1.1.1","8.8.8.8"])
 
 
 const app = express();
-
+  
 app.use(express.json());
 
 
@@ -32,8 +32,6 @@ app.use(rateLimit())
 app.use(helmet())
 
 app.use(hpp())
-
-
 
 
 
