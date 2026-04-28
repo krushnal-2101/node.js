@@ -270,4 +270,114 @@ export const getWelcomeEmailTemplate = (userName) => {
   `;
 };
 
-export default { getWelcomeEmailTemplate }
+
+
+export const getResetPasswordTemplate = ({ username, resetLink }) => {
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Reset Password</title>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f2f5f9;
+        font-family: Arial, sans-serif;
+      }
+
+      .container {
+        max-width: 520px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+      }
+
+      .logo {
+        text-align: center;
+        font-size: 22px;
+        font-weight: bold;
+        color: #4f46e5;
+        margin-bottom: 20px;
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 15px;
+      }
+
+      p {
+        font-size: 14px;
+        color: #555;
+        line-height: 1.6;
+      }
+
+      .btn {
+        display: inline-block;
+        margin: 20px 0;
+        padding: 12px 20px;
+        background: #4f46e5;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 600;
+      }
+
+      .link-box {
+        background: #f4f4f4;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        word-break: break-all;
+      }
+
+      .footer {
+        margin-top: 20px;
+        font-size: 12px;
+        text-align: center;
+        color: #999;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+
+      <div class="logo">🚀 YourApp</div>
+
+      <h2>Reset Your Password</h2>
+
+      <p>Hello <strong>${username}</strong>,</p>
+
+      <p>
+        We received a request to reset your password. Click the button below to continue.
+      </p>
+
+      <a href="${resetLink}" class="btn">Reset Password</a>
+
+      <p>If the button doesn't work, copy this link:</p>
+
+      <div class="link-box">${resetLink}</div>
+
+      <p style="color:red; font-size:12px;">
+        This link will expire in 15 minutes.
+      </p>
+
+      <p>If you didn’t request this, you can ignore this email.</p>
+
+      <div class="footer">
+        © 2026 YourApp. All rights reserved.
+      </div>
+
+    </div>
+  </body>
+  </html>
+  `;
+};
+
+export default { getWelcomeEmailTemplate, getResetPasswordTemplate }

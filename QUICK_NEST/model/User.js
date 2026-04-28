@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { type } from "node:os";
 
 const userSchema = mongoose.Schema(
   {
@@ -44,6 +45,14 @@ const userSchema = mongoose.Schema(
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    resetPasswordExpiry:{
+      type: Date,
+      default:null,
     },
 
     tokens: [
