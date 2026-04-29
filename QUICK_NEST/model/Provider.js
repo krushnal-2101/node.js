@@ -1,12 +1,19 @@
 import mongoose from "mongoose";
 
 
+
 const ProviderSchema = new mongoose.Schema({
 
     userId: {
         type:mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true,
+    },
+    providerId:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref : "Provider",
+        required: true,
+
     },
     services: [
         {
