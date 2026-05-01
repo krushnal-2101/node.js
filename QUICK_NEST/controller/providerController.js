@@ -79,6 +79,7 @@ const getProvider = async (req, res, next) => {
 }
 
 
+
 const updateProvider = async (req, res, next) => {
     try {
         const { id } = req.params;
