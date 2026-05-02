@@ -5,11 +5,159 @@ import sendWhatsAppMessage from "../utils/sendWhatsAppMessage.js";
 
 
 
-const createBooking = async (req, res, next) => {
-  try {
-    const { serviceId, bookingDate, timeSlot, notes, } = req.body;
+// const createBooking = async (req, res, next) => {
+//   try {
+//     const { serviceId, bookingDate, timeSlot, notes, } = req.body;
 
-    const userId = req.user._id;
+//     const userId = req.user._id;
+
+//     const service = await Service.findById(serviceId);
+
+//     if (!service) {
+//       return next(new HttpError("service not found", 404));
+//     }
+
+//     if (!service.isActive) {
+//       return next(
+//         new HttpError(
+//           "service is currently not active please try again after some time",
+//           400,
+//         ),
+//       );
+//     }
+
+
+
+//     const startOfDay = new Date(bookingDate);
+//     startOfDay.setHours(0, 0, 0, 0);
+
+//     const endOfDay = new Date(bookingDate);
+//     endOfDay.setHours(23, 59, 59, 999);
+
+//     const existingBooking = await Booking.findOne({
+//       serviceId,
+//       bookingDate: { $gte: startOfDay, $lt: endOfDay },
+//       status: { $in: ["pending", "confirmed"] },
+//     });
+
+//     console.log("service", existingBooking);
+
+//     if (existingBooking) {
+//       return next(
+//         new HttpError("service already booked for this time slot ", 409),
+//       );
+//     }
+
+//     const newBooking = new Booking({
+//       userId,
+//       serviceId,
+//       bookingDate: new Date(bookingDate),
+//       timeSlot,
+//       notes,
+//       totalPrice: service.price,
+//     });
+
+//     await newBooking.save();
+
+//     await newBooking.populate([
+//       {
+//         path: "serviceId",
+//         select: "name price duration",
+//       },
+//       {
+//         path: "userId",
+//         select: "name email phone",
+//       },
+//     ]);
+
+
+//     res.status(201).json({
+//       success: true,
+//       message: "service booked successfully",
+//       newBooking,
+//     });
+
+//     await sendWhatsAppMessage(newBooking.userId.phone, "BOOKING HAS BEEN CREATED SUCCESSFULLY")
+    
+//   } catch (error) {
+//     next(new HttpError(error.message, 500));
+//   }
+// };
+
+const createBooking = async (req, res, next) => {
+  const { serviceId, bookingDate, timeSlot, notes, providerId } = req.body;
+
+  const lockKey = `bookings:${serviceId}:${bookingDate}:${timeSlot}`;
+
+  const userId = req.user._id;
+
+  let lockAcquired = false;
+
+  try {
+    if (!serviceId || !bookingDate || !timeSlot || !notes || !providerId) {
+      return next(new HttpError("some necessary field are missing"));
+    }
+
+    // date validation
+
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+
+    const selectedDate = new Date(bookingDate);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    const maxDate = new Date(today);
+    maxDate.setDate(maxDate.getDate() + 7);
+
+    if (selectedDate < today) {
+      return next(new HttpError("can't create bookings for past days", 400));
+    }
+
+    if (selectedDate > max) {
+      return next(
+        new HttpError("advance booking can be book upto 7 days only", 400),
+      );
+    }
+
+    // time validation
+
+    const now = new Date();
+
+    if (selectedDate.getTime() === today.getTime()) {
+      const [startTime] = timeSlot.split("-");
+
+      const [hours, minutes] = startTime.trim().split(":").map(Number);
+
+      if (isNaN(hours) || isNaN(minutes)) {
+        return next(new HttpError("invalid time slots", 400));
+      }
+
+      const slotDateAndTime = new Date(selectedDate);
+      slotDateAndTime.setHours(hours, minutes, 0, 0);
+
+      if (slotDateAndTime < now) {
+        return next(
+          new HttpError("can't book previous time which have passed"),
+          400,
+        );
+      }
+    }
+
+    // redis lock
+
+    const lock = await redisClient.set(lockKey, userId.toString(), {
+      NX: true,
+      EX: 10,
+    });
+
+    if (!lock) {
+      return next(new HttpError("already time slots is booked", 409));
+    }
+
+    lockAcquired = true;
+
+    // service validation
 
     const service = await Service.findById(serviceId);
 
@@ -26,7 +174,11 @@ const createBooking = async (req, res, next) => {
       );
     }
 
+    const provider = await Provider.findById(providerId);
 
+    if (!provider) {
+      return next(new HttpError("provider not found", 404));
+    }
 
     const startOfDay = new Date(bookingDate);
     startOfDay.setHours(0, 0, 0, 0);
@@ -36,11 +188,10 @@ const createBooking = async (req, res, next) => {
 
     const existingBooking = await Booking.findOne({
       serviceId,
+      timeSlot,
       bookingDate: { $gte: startOfDay, $lt: endOfDay },
       status: { $in: ["pending", "confirmed"] },
     });
-
-    console.log("service", existingBooking);
 
     if (existingBooking) {
       return next(
@@ -51,6 +202,7 @@ const createBooking = async (req, res, next) => {
     const newBooking = new Booking({
       userId,
       serviceId,
+      providerId,
       bookingDate: new Date(bookingDate),
       timeSlot,
       notes,
@@ -68,8 +220,11 @@ const createBooking = async (req, res, next) => {
         path: "userId",
         select: "name email phone",
       },
+      {
+        path: "providerId",
+        select: "name",
+      },
     ]);
-
 
     res.status(201).json({
       success: true,
@@ -77,12 +232,21 @@ const createBooking = async (req, res, next) => {
       newBooking,
     });
 
-    await sendWhatsAppMessage(newBooking.userId.phone, "BOOKING HAS BEEN CREATED SUCCESSFULLY")
-    
+    console.log("phone", newBooking.userId.phone);
+
+    await sendWhatsAppMessage(
+      newBooking.userId.phone,
+      "booking has been created successfully",
+    );
   } catch (error) {
     next(new HttpError(error.message, 500));
+  } finally {
+    if (lockAcquired) {
+      await redisClient.del(lockKey);
+    }
   }
 };
+
 
 
 const getAllBookings = async (req, res, next) => {
