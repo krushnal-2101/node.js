@@ -608,3 +608,7 @@ const completeBooking = async (req, res, next) => {
 
 
 export default { createBooking, getAllBookings, getBookingByServiceId, getBookingById, bookingByUserId, cancelBookingStatus, confirmBookingStatus, availableTimeSlots, completeBooking  };
+
+
+
+

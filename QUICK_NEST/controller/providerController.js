@@ -208,4 +208,88 @@ const getProviderBooking = async (req, res, next) => {
 }
 
 
-export default { registerProvider, getProvider, updateProvider, deleteProvider, getProviderBooking }
+
+const confirmProvider = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const role = req.user.role;
+
+        if (role !== "admin" && role !== "super_admin") {
+            return next(new HttpError("Only admin can verify providers", 403));
+        }
+
+        const provider = await Provider.findById(id);
+        if (!provider) {
+            return next(new HttpError("Provider not found", 404));
+        }
+
+        provider.isVerified = true;
+        await provider.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Provider verified successfully",
+            provider,
+        });
+    } catch (error) {
+        next(new HttpError(error.message, 500));
+    }
+}
+
+
+const canceledProvider = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const role = req.user.role;
+        const loginUserId = req.user._id;
+
+        const provider = await Provider.findById(id);
+
+        if (!provider) {
+            return next(new HttpError("Provider not found", 404));
+        }
+
+      
+        if (
+            role !== "admin" &&
+            role !== "super_admin" &&
+            provider.userId.toString() !== loginUserId.toString()
+        ) {
+            return next(new HttpError("Unauthorized action", 403));
+        }
+
+       
+        if (provider.status === "cancelled" || provider.status === "rejected") {
+            return next(new HttpError("Provider already cancelled/rejected", 400));
+        }
+
+      
+        if (role === "admin" || role === "super_admin") {
+            provider.status = "rejected";
+            provider.isVerified = false;
+        } else {
+            provider.status = "cancelled";
+            provider.isVerified = false;
+        }
+
+        await provider.save();
+
+        
+        await User.findByIdAndUpdate(provider.userId, {
+            role: "customer",
+        });
+
+        res.status(200).json({
+            success: true,
+            message:
+                role === "admin"
+                    ? "Provider rejected by admin"
+                    : "Provider request cancelled successfully",
+            provider,
+        });
+    } catch (error) {
+        next(new HttpError(error.message, 500));
+    }
+}
+
+export default { registerProvider, getProvider, updateProvider, deleteProvider, getProviderBooking, confirmProvider, canceledProvider}

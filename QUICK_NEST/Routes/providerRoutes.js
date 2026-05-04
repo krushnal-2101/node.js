@@ -17,4 +17,8 @@ router.get("/deleteProvider", auth, checkRole("admin ", "super_admin"), provider
 
 router.get("/getProviderBooking", auth, checkRole("admin", "super_admin "), providerController.getProviderBooking)
 
+router.get("/confirmProvider", auth, checkRole("admin", "super_admin"), providerController.confirmProvider )
+
+router.get("/canceledProvider", auth, checkRole("admin", "super_admin"), providerController.canceledProvider )
+
 export default router;
